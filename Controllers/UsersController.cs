@@ -36,7 +36,7 @@ namespace WebApi.Controllers
 
         [AllowAnonymous]
         [HttpPost("authenticate")]
-        public IActionResult Authenticate([FromBody]AuthenticateModel model)
+        public IActionResult Authenticate([FromBody] AuthenticateModel model)
         {
             var user = _userService.Authenticate(model.Username, model.Password);
 
@@ -49,7 +49,8 @@ namespace WebApi.Controllers
             {
                 Subject = new ClaimsIdentity(new Claim[]
                 {
-                    new Claim(ClaimTypes.Name, user.Id.ToString())
+                    new Claim(ClaimTypes.Name, user.Id.ToString()),
+                    new Claim(ClaimTypes.Role, user.Role)
                 }),
                 Expires = DateTime.UtcNow.AddDays(7),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
@@ -64,13 +65,15 @@ namespace WebApi.Controllers
                 Username = user.Username,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
+                Role = user.Role,
+                Email = user.Email,
                 Token = tokenString
             });
         }
 
         [AllowAnonymous]
         [HttpPost("register")]
-        public IActionResult Register([FromBody]RegisterModel model)
+        public IActionResult Register([FromBody] RegisterModel model)
         {
             // map model to entity
             var user = _mapper.Map<User>(model);
@@ -79,7 +82,7 @@ namespace WebApi.Controllers
             {
                 // create user
                 _userService.Create(user, model.Password);
-                return Ok();
+                return Ok(user);
             }
             catch (AppException ex)
             {
@@ -88,6 +91,7 @@ namespace WebApi.Controllers
             }
         }
 
+        [Authorize(Roles = Role.Admin)]
         [HttpGet]
         public IActionResult GetAll()
         {
@@ -105,7 +109,7 @@ namespace WebApi.Controllers
         }
 
         [HttpPut("{id}")]
-        public IActionResult Update(int id, [FromBody]UpdateModel model)
+        public IActionResult Update(int id, [FromBody] UpdateModel model)
         {
             // map model to entity and set id
             var user = _mapper.Map<User>(model);

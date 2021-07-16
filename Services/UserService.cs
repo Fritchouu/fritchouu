@@ -60,8 +60,8 @@ namespace WebApi.Services
             if (string.IsNullOrWhiteSpace(password))
                 throw new AppException("Password is required");
 
-            if (_context.Users.Any(x => x.Username == user.Username))
-                throw new AppException("Username \"" + user.Username + "\" is already taken");
+            if ((_context.Users.Any(x => x.Username == user.Username)) && (_context.Users.Any(y => y.Email == user.Email)))
+                throw new AppException("Username or Email  is already taken");
 
             byte[] passwordHash, passwordSalt;
             CreatePasswordHash(password, out passwordHash, out passwordSalt);

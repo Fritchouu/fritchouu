@@ -16,7 +16,7 @@ namespace WebApi.Helpers
         protected override void OnConfiguring(DbContextOptionsBuilder options)
         {
             // connect to sql server database
-            options.UseSqlServer(Configuration.GetConnectionString("WebApiDatabase"));
+            options.UseNpgsql(Configuration.GetConnectionString("WebApiDatabase"));
         }
 
         public DbSet<User> Users { get; set; }
